@@ -8,54 +8,50 @@ const REPORT_SCHEMA = {
   properties: {
     isDiscImage: { 
       type: Type.BOOLEAN, 
-      description: "判断上传的图片是否为 DISC 测评结果。如果是返回 true；否则返回 false。" 
+      description: "严格判断图片是否为 DISC 测评结果。如果图片完全不包含 D/I/S/C 分数、图表或相关性格描述，必须返回 false。" 
     },
-    overallTitle: { type: Type.STRING, description: "富有文学感或专业感的性格类型标题（例如：锐意进取的开拓者）。" },
-    summary: { type: Type.STRING, description: "多维度、深度的性格总述，需包含内在动力分析。" },
+    overallTitle: { type: Type.STRING, description: "一个富有启发性的性格标签（如：深思熟虑的战略执行官）。" },
+    summary: { type: Type.STRING, description: "长篇幅（不少于 350 字）的深度性格画像。需要分析个体的核心动机、压力下的反应以及内在心理能量的流动方向。" },
     traits: { 
       type: Type.ARRAY, 
       items: { type: Type.STRING },
-      description: "至少 6-8 项细致的人格特质描述，每项需解释其背后的心理动因。"
+      description: "8 项具体的行为特质。每项不仅描述表现，还要分析这种表现对周围人的影响（正面与潜在摩擦点）。"
     },
     strengths: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "核心竞争优势，需结合职场和生活场景具体说明。"
+      description: "基于 DISC 组合的独特优势，举例说明在什么具体场景下这种优势会爆发式显现。"
     },
     growthAreas: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "深刻的成长痛点与改进方向，需提供可操作的心理学建议。"
+      description: "深刻的自我局限分析。提供基于认知行为疗法（CBT）视角的改进建议。"
     },
-    interpersonalAdvice: { type: Type.STRING, description: "详尽的人际沟通指南，包括针对不同性格人群的应对策略。" },
-    careerAdvice: { type: Type.STRING, description: "全方位的职业规划建议，包括适合的工作环境、潜在风险和长期发展方向。" }
+    interpersonalAdvice: { type: Type.STRING, description: "针对性极强的人际攻略：如何与激进者相处、如何赢得保守者的信任、如何在社交中节省能量等。" },
+    careerAdvice: { type: Type.STRING, description: "职业生涯中长期的战略规划。包括最能激发其潜能的管理风格、建议避开的职场文化类型，以及未来的转型方向。" }
   },
   required: ["isDiscImage", "overallTitle", "summary", "traits", "strengths", "growthAreas", "interpersonalAdvice", "careerAdvice"]
 };
 
 export const analyzeDiscImage = async (base64Image: string): Promise<any> => {
-  // 使用 pro 模型以获得更深刻的洞察力
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: [
       {
         parts: [
           {
-            text: `你是一位享誉国际的心理学专家，精通 DISC 行为分析理论及职场心理学。
+            text: `你是一位顶级企业教练和心理学家。
             
             任务：
-            请深度解析这张 DISC 测评结果截图。你的分析不应停留在表面分数，而要穿透数据，勾勒出一个生动、立体的人格画像。
+            深度解析这张 DISC 测评截图。你的目标是让用户看后产生“你比我更懂我”的共鸣。
             
-            分析要求：
-            1. **细致入微**：不要使用通用套话。请根据 D/I/S/C 的比例关系（如高 D 高 C 的矛盾与互补）进行交叉分析。
-            2. **内容丰富**：
-               - traits 字段：请提供 6 到 8 条深度特质，每条需包含“表现 + 原因”。
-               - summary 字段：撰写 300 字左右的深度导语，分析其核心驱动力（是恐惧失败、渴望认可、追求平稳还是坚持真理）。
-               - 建议部分：必须包含具体的、立竿见影的行动建议。
-            3. **专业语境**：使用专业的心理学词汇，但保持叙述的温度和人文关怀。
-            4. **格式核查**：如果图片不是有效的 DISC 报告，必须将 isDiscImage 设为 false。
+            分析准则：
+            1. **拒绝平庸**：不要输出显而易见的废话（如“你很勤奋”）。请分析：因为你倾向于追求极致的逻辑闭环（高C），所以在面对模糊决策时会产生生理性焦虑。
+            2. **多维交叉**：如果 D 和 I 都很高，分析其“外放能量”与“结果导向”如何博弈。
+            3. **严格过滤**：如果图片中没有明显的 DISC 数据（百分比、条形图、饼图或 D/I/S/C 字样），请将 isDiscImage 设为 false。
+            4. **内容厚度**：分析必须充实、具体、具有洞察力。
             
-            输出语言：中文。`
+            语言：中文。`
           },
           {
             inlineData: {
@@ -69,7 +65,8 @@ export const analyzeDiscImage = async (base64Image: string): Promise<any> => {
     config: {
       responseMimeType: "application/json",
       responseSchema: REPORT_SCHEMA,
-      temperature: 0.7, // 略微提高随机性以获得更具文学性和多样性的描述
+      temperature: 0.8,
+      thinkingConfig: { thinkingBudget: 4000 }
     }
   });
 
