@@ -5,7 +5,6 @@ import { analyzeDiscImage } from './services/geminiService.ts';
 import { LoadingOverlay } from './components/LoadingOverlay.tsx';
 import { AnalysisReport } from './components/AnalysisReport.tsx';
 
-// 专业的 SVG Logo 组件
 const MainLogo: React.FC<{ sizeClass?: string; containerSize?: string }> = ({ 
   sizeClass = "w-10 h-10", 
   containerSize = "40px" 
@@ -39,6 +38,12 @@ const App: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // 预检 API Key
+    if (!process.env.API_KEY) {
+      setError('检测到 API 密钥未配置，请在系统环境变量中设置 API_KEY。');
+      return;
+    }
+
     setState('ANALYZING');
     setError(null);
 
@@ -52,13 +57,19 @@ const App: React.FC = () => {
           setReport(result);
           setState('REPORT');
         } else {
-          // 更新为用户要求的简洁提示
           setError('照片内容不符合要求，请上传 DISC 性格测评结果截图。');
           setState('IDLE');
         }
-      } catch (err) {
-        console.error("分析失败:", err);
-        setError('服务繁忙或解析失败，请检查图片清晰度后重试。');
+      } catch (err: any) {
+        console.error("分析失败详情:", err);
+        const msg = err.message?.toLowerCase();
+        if (msg?.includes('401') || msg?.includes('key')) {
+          setError('API 密钥无效或已过期，请检查配置。');
+        } else if (msg?.includes('429') || msg?.includes('quota')) {
+          setError('访问频率过快，请稍后再试。');
+        } else {
+          setError('分析失败：可能是网络连接不稳定或图片无法识别。请重试。');
+        }
         setState('IDLE');
       }
     };
@@ -119,7 +130,7 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-xl font-bold text-gray-800">上传测评截图</p>
-                    <p className="text-gray-400 mt-2">支持 D/I/S/C 报告或分数截图</p>
+                    <p className="text-gray-400 mt-2">点击此处上传您的分析报告</p>
                   </div>
                   <div className="inline-block px-10 py-4 bg-gray-900 text-white rounded-full font-bold shadow-2xl">
                     立即分析
@@ -129,7 +140,7 @@ const App: React.FC = () => {
             </div>
             
             {error && (
-              <div className="max-w-md mx-auto p-5 bg-red-50 text-red-600 border border-red-100 rounded-2xl animate-shake">
+              <div className="max-w-md mx-auto p-5 bg-red-50 text-red-600 border border-red-100 rounded-2xl">
                 ⚠️ {error}
               </div>
             )}
