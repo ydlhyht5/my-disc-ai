@@ -1,0 +1,8 @@
+
+{
+  "name": "AI DISC 测评专家",
+  "description": "基于双子座 AI 的 DISC 性格色彩深度分析工具。只需上传您的测试结果截图，即可获得专业的心理学深度解读、职场建议与成长指南。",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
