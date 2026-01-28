@@ -5,7 +5,7 @@ import { analyzeDiscImage } from './services/geminiService.ts';
 import { LoadingOverlay } from './components/LoadingOverlay.tsx';
 import { AnalysisReport } from './components/AnalysisReport.tsx';
 
-// 专业的 SVG Logo 组件 - 优化了尺寸控制
+// 专业的 SVG Logo 组件
 const MainLogo: React.FC<{ sizeClass?: string; containerSize?: string }> = ({ 
   sizeClass = "w-10 h-10", 
   containerSize = "40px" 
@@ -14,14 +14,12 @@ const MainLogo: React.FC<{ sizeClass?: string; containerSize?: string }> = ({
     style={{ width: containerSize, height: containerSize }}
     className={`${sizeClass} relative flex items-center justify-center group transition-transform hover:scale-105 duration-300`}
   >
-    {/* 四象限背景网格 */}
     <div className="grid grid-cols-2 gap-0.5 w-full h-full rotate-45 transform overflow-hidden rounded-md shadow-sm">
       <div className="bg-red-500 opacity-90"></div>
       <div className="bg-yellow-400 opacity-90"></div>
       <div className="bg-green-500 opacity-90"></div>
       <div className="bg-blue-600 opacity-90"></div>
     </div>
-    {/* 中心 AI 洞察星光 */}
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
       <div className="w-2/5 h-2/5 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100">
         <svg viewBox="0 0 24 24" className="w-3/4 h-3/4 text-indigo-600 fill-current" xmlns="http://www.w3.org/2000/svg">
@@ -54,12 +52,13 @@ const App: React.FC = () => {
           setReport(result);
           setState('REPORT');
         } else {
-          setError('检测到图片内容与 DISC 测评结果不符。请上传包含 D/I/S/C 分数的截图。');
+          // 更新为用户要求的简洁提示
+          setError('照片内容不符合要求，请上传 DISC 性格测评结果截图。');
           setState('IDLE');
         }
       } catch (err) {
         console.error("分析失败:", err);
-        setError('分析过程中遇到错误，请重试。请确认已在 Vercel 环境变量中配置 API_KEY。');
+        setError('服务繁忙或解析失败，请检查图片清晰度后重试。');
         setState('IDLE');
       }
     };
@@ -75,7 +74,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
-      {/* 导航栏 */}
       <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -102,7 +100,7 @@ const App: React.FC = () => {
                 看见真实的<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">自己</span>
               </h1>
               <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                上传您的 DISC 测试结果截图，由 AI 顾问为您提供深度心理学解读、职场建议与成长指南。
+                上传您的 DISC 测试结果截图，由 AI 顾问为您提供深度心理学解读。
               </p>
             </header>
 
@@ -121,9 +119,9 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-xl font-bold text-gray-800">上传测评截图</p>
-                    <p className="text-gray-400 mt-2">点击此处或拖拽文件到这里</p>
+                    <p className="text-gray-400 mt-2">支持 D/I/S/C 报告或分数截图</p>
                   </div>
-                  <div className="inline-block px-10 py-4 bg-gray-900 text-white rounded-full font-bold shadow-2xl transition-transform active:scale-95">
+                  <div className="inline-block px-10 py-4 bg-gray-900 text-white rounded-full font-bold shadow-2xl">
                     立即分析
                   </div>
                 </div>
@@ -131,7 +129,7 @@ const App: React.FC = () => {
             </div>
             
             {error && (
-              <div className="max-w-md mx-auto p-4 bg-red-50 text-red-600 border border-red-100 rounded-2xl animate-pulse">
+              <div className="max-w-md mx-auto p-5 bg-red-50 text-red-600 border border-red-100 rounded-2xl animate-shake">
                 ⚠️ {error}
               </div>
             )}
