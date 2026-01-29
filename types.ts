@@ -1,13 +1,7 @@
 
-export interface DiscResult {
-  D: number;
-  I: number;
-  S: number;
-  C: number;
-}
-
 export interface AnalysisReport {
-  isDiscImage: boolean;
+  isPersonalityTest: boolean;
+  testType: string; // 例如: MBTI, DISC, 九型人格, 大五人格等
   overallTitle: string;
   summary: string;
   traits: string[];
