@@ -1,7 +1,7 @@
 
 {
-  "name": "AI DISC 测评专家",
-  "description": "基于双子座 AI 的 DISC 性格色彩深度分析工具。只需上传您的测试结果截图，即可获得专业的心理学深度解读、职场建议与成长指南。",
+  "name": "AI 全能性格分析家",
+  "description": "基于双子座 AI 的全能性格深度分析工具。支持 MBTI、DISC、九型人格、大五人格等主流测评，为您提供专业的心理学深度解读、职场建议与成长指南。",
   "requestFramePermissions": [
     "camera"
   ]
