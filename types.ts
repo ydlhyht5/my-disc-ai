@@ -1,7 +1,9 @@
 
+export type Language = 'zh' | 'en';
+
 export interface AnalysisReport {
   isPersonalityTest: boolean;
-  testType: string; // 例如: MBTI, DISC, 九型人格, 大五人格等
+  testType: string;
   overallTitle: string;
   summary: string;
   traits: string[];
