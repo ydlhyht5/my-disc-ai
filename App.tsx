@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { AppState, AnalysisReport as ReportType } from './types.ts';
-import { analyzeDiscImage } from './services/geminiService.ts';
+import { analyzePersonalityImage } from './services/geminiService.ts';
 import { LoadingOverlay } from './components/LoadingOverlay.tsx';
 import { AnalysisReport } from './components/AnalysisReport.tsx';
 
@@ -14,10 +14,10 @@ const MainLogo: React.FC<{ sizeClass?: string; containerSize?: string }> = ({
     className={`${sizeClass} relative flex items-center justify-center group transition-transform hover:scale-105 duration-300`}
   >
     <div className="grid grid-cols-2 gap-0.5 w-full h-full rotate-45 transform overflow-hidden rounded-md shadow-sm">
-      <div className="bg-red-500 opacity-90"></div>
-      <div className="bg-yellow-400 opacity-90"></div>
-      <div className="bg-green-500 opacity-90"></div>
-      <div className="bg-blue-600 opacity-90"></div>
+      <div className="bg-gradient-to-br from-indigo-500 to-purple-500"></div>
+      <div className="bg-gradient-to-br from-blue-500 to-cyan-500"></div>
+      <div className="bg-gradient-to-br from-emerald-500 to-teal-500"></div>
+      <div className="bg-gradient-to-br from-orange-500 to-red-500"></div>
     </div>
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
       <div className="w-2/5 h-2/5 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100">
@@ -38,9 +38,8 @@ const App: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // 预检 API Key
     if (!process.env.API_KEY) {
-      setError('检测到 API 密钥未配置，请在系统环境变量中设置 API_KEY。');
+      setError('检测到 API 密钥未配置，请联系管理员或检查环境变量。');
       return;
     }
 
@@ -51,25 +50,18 @@ const App: React.FC = () => {
     reader.onload = async (e) => {
       const base64 = e.target?.result as string;
       try {
-        const result = await analyzeDiscImage(base64);
+        const result = await analyzePersonalityImage(base64);
         
-        if (result && result.isDiscImage) {
+        if (result && result.isPersonalityTest) {
           setReport(result);
           setState('REPORT');
         } else {
-          setError('照片内容不符合要求，请上传 DISC 性格测评结果截图。');
+          setError('照片内容不符合要求。请上传 MBTI、DISC、九型等主流测试结果截图。');
           setState('IDLE');
         }
       } catch (err: any) {
         console.error("分析失败详情:", err);
-        const msg = err.message?.toLowerCase();
-        if (msg?.includes('401') || msg?.includes('key')) {
-          setError('API 密钥无效或已过期，请检查配置。');
-        } else if (msg?.includes('429') || msg?.includes('quota')) {
-          setError('访问频率过快，请稍后再试。');
-        } else {
-          setError('分析失败：可能是网络连接不稳定或图片无法识别。请重试。');
-        }
+        setError('分析失败：网络连接不稳定或图片无法识别。请重试。');
         setState('IDLE');
       }
     };
@@ -89,7 +81,7 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <MainLogo sizeClass="w-10 h-10" containerSize="40px" />
-            <span className="font-bold text-gray-900 text-xl tracking-tight">AI DISC 测评专家</span>
+            <span className="font-bold text-gray-900 text-xl tracking-tight">AI 全能性格分析家</span>
           </div>
           <button 
             onClick={handleReset} 
@@ -108,16 +100,16 @@ const App: React.FC = () => {
                 <MainLogo sizeClass="w-24 h-24" containerSize="96px" />
               </div>
               <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight">
-                看见真实的<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">自己</span>
+                看见隐藏的<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">潜能</span>
               </h1>
               <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                上传您的 DISC 测试结果截图，由 AI 顾问为您提供深度心理学解读。
+                上传 MBTI、DISC、九型、大五人格等测试结果截图，由 AI 专家为您提供深度解析。
               </p>
             </header>
 
             <div className="relative group max-w-xl mx-auto">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-              <div className="relative bg-white border-2 border-dashed border-gray-200 rounded-[2.5rem] p-16 hover:border-blue-400 transition-all shadow-sm">
+              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+              <div className="relative bg-white border-2 border-dashed border-gray-200 rounded-[2.5rem] p-16 hover:border-indigo-400 transition-all shadow-sm">
                 <input 
                   type="file" 
                   accept="image/*" 
@@ -125,22 +117,22 @@ const App: React.FC = () => {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                 />
                 <div className="space-y-6">
-                  <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-inner text-blue-600">
-                    📷
+                  <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-inner text-indigo-600">
+                    📂
                   </div>
                   <div>
-                    <p className="text-xl font-bold text-gray-800">上传测评截图</p>
-                    <p className="text-gray-400 mt-2">点击此处上传您的分析报告</p>
+                    <p className="text-xl font-bold text-gray-800">上传测评报告截图</p>
+                    <p className="text-gray-400 mt-2">支持 MBTI, DISC, 九型, 大五, 盖洛普等</p>
                   </div>
-                  <div className="inline-block px-10 py-4 bg-gray-900 text-white rounded-full font-bold shadow-2xl">
-                    立即分析
+                  <div className="inline-block px-10 py-4 bg-indigo-600 text-white rounded-full font-bold shadow-xl hover:bg-indigo-700 transition-colors">
+                    立即解析
                   </div>
                 </div>
               </div>
             </div>
             
             {error && (
-              <div className="max-w-md mx-auto p-5 bg-red-50 text-red-600 border border-red-100 rounded-2xl">
+              <div className="max-w-md mx-auto p-5 bg-red-50 text-red-600 border border-red-100 rounded-2xl animate-shake">
                 ⚠️ {error}
               </div>
             )}
@@ -158,7 +150,7 @@ const App: React.FC = () => {
         <div className="flex justify-center mb-4 grayscale opacity-40">
           <MainLogo sizeClass="w-6 h-6" containerSize="24px" />
         </div>
-        <p>© 2026 AI DISC 测评专家 · 专业心理分析引擎</p>
+        <p>© 2026 AI 全能性格分析家 · 专业心理学引擎</p>
       </footer>
     </div>
   );
