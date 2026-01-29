@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { AppState, AnalysisReport as ReportType } from './types.ts';
+import { AppState, AnalysisReport as ReportType, Language } from './types.ts';
 import { analyzePersonalityImage } from './services/geminiService.ts';
 import { LoadingOverlay } from './components/LoadingOverlay.tsx';
 import { AnalysisReport } from './components/AnalysisReport.tsx';
@@ -30,16 +30,48 @@ const MainLogo: React.FC<{ sizeClass?: string; containerSize?: string }> = ({
 );
 
 const App: React.FC = () => {
+  const [lang, setLang] = useState<Language>('zh');
   const [state, setState] = useState<AppState>('IDLE');
   const [report, setReport] = useState<ReportType | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const t = {
+    zh: {
+      appName: "AI 全能性格分析家",
+      back: "返回首页",
+      titleStart: "看见隐藏的",
+      titleEnd: "潜能",
+      subtitle: "上传 MBTI、DISC、九型、大五人格等测试结果截图，由 AI 专家为您提供深度解析。",
+      uploadTitle: "上传测评报告截图",
+      uploadDesc: "支持 MBTI, DISC, 九型, 大五, 盖洛普等",
+      action: "立即解析",
+      keyError: "检测到 API 密钥未配置，请联系管理员或检查环境变量。",
+      notMatchError: "照片内容不符合要求。请上传 MBTI、DISC、九型等主流测试结果截图。",
+      generalError: "分析失败：网络连接不稳定或图片无法识别。请重试。",
+      footer: "专业心理学引擎"
+    },
+    en: {
+      appName: "AI Personality Analyst",
+      back: "Home",
+      titleStart: "Unlock Your Hidden",
+      titleEnd: "Potential",
+      subtitle: "Upload screenshots of MBTI, DISC, Enneagram, or Big Five results for an AI-powered psychological deep dive.",
+      uploadTitle: "Upload Test Report",
+      uploadDesc: "Supports MBTI, DISC, Enneagram, Big Five, etc.",
+      action: "Analyze Now",
+      keyError: "API Key not found. Please check your environment variables.",
+      notMatchError: "Invalid content. Please upload a screenshot of a major personality test.",
+      generalError: "Analysis failed. Unstable connection or unrecognizable image. Please retry.",
+      footer: "Professional Psychological Engine"
+    }
+  }[lang];
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (!process.env.API_KEY) {
-      setError('检测到 API 密钥未配置，请联系管理员或检查环境变量。');
+      setError(t.keyError);
       return;
     }
 
@@ -50,18 +82,18 @@ const App: React.FC = () => {
     reader.onload = async (e) => {
       const base64 = e.target?.result as string;
       try {
-        const result = await analyzePersonalityImage(base64);
+        const result = await analyzePersonalityImage(base64, lang);
         
         if (result && result.isPersonalityTest) {
           setReport(result);
           setState('REPORT');
         } else {
-          setError('照片内容不符合要求。请上传 MBTI、DISC、九型等主流测试结果截图。');
+          setError(t.notMatchError);
           setState('IDLE');
         }
       } catch (err: any) {
-        console.error("分析失败详情:", err);
-        setError('分析失败：网络连接不稳定或图片无法识别。请重试。');
+        console.error("Analysis Error:", err);
+        setError(t.generalError);
         setState('IDLE');
       }
     };
@@ -81,14 +113,30 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <MainLogo sizeClass="w-10 h-10" containerSize="40px" />
-            <span className="font-bold text-gray-900 text-xl tracking-tight">AI 全能性格分析家</span>
+            <span className="font-bold text-gray-900 text-xl tracking-tight hidden sm:inline">{t.appName}</span>
           </div>
-          <button 
-            onClick={handleReset} 
-            className="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-all"
-          >
-            返回首页
-          </button>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex bg-gray-100 rounded-full p-1 border border-gray-200">
+              <button 
+                onClick={() => setLang('zh')}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${lang === 'zh' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                简
+              </button>
+              <button 
+                onClick={() => setLang('en')}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${lang === 'en' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                EN
+              </button>
+            </div>
+            <button 
+              onClick={handleReset} 
+              className="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-full transition-all"
+            >
+              {t.back}
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -100,16 +148,16 @@ const App: React.FC = () => {
                 <MainLogo sizeClass="w-24 h-24" containerSize="96px" />
               </div>
               <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight">
-                看见隐藏的<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">潜能</span>
+                {t.titleStart}<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">{t.titleEnd}</span>
               </h1>
               <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                上传 MBTI、DISC、九型、大五人格等测试结果截图，由 AI 专家为您提供深度解析。
+                {t.subtitle}
               </p>
             </header>
 
             <div className="relative group max-w-xl mx-auto">
               <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-              <div className="relative bg-white border-2 border-dashed border-gray-200 rounded-[2.5rem] p-16 hover:border-indigo-400 transition-all shadow-sm">
+              <div className="relative bg-white border-2 border-dashed border-gray-200 rounded-[2.5rem] p-12 sm:p-16 hover:border-indigo-400 transition-all shadow-sm">
                 <input 
                   type="file" 
                   accept="image/*" 
@@ -121,11 +169,11 @@ const App: React.FC = () => {
                     📂
                   </div>
                   <div>
-                    <p className="text-xl font-bold text-gray-800">上传测评报告截图</p>
-                    <p className="text-gray-400 mt-2">支持 MBTI, DISC, 九型, 大五, 盖洛普等</p>
+                    <p className="text-xl font-bold text-gray-800">{t.uploadTitle}</p>
+                    <p className="text-gray-400 mt-2 text-sm">{t.uploadDesc}</p>
                   </div>
                   <div className="inline-block px-10 py-4 bg-indigo-600 text-white rounded-full font-bold shadow-xl hover:bg-indigo-700 transition-colors">
-                    立即解析
+                    {t.action}
                   </div>
                 </div>
               </div>
@@ -139,10 +187,10 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {state === 'ANALYZING' && <LoadingOverlay />}
+        {state === 'ANALYZING' && <LoadingOverlay lang={lang} />}
         
         {state === 'REPORT' && report && (
-          <AnalysisReport report={report} onReset={handleReset} />
+          <AnalysisReport report={report} onReset={handleReset} lang={lang} />
         )}
       </main>
 
@@ -150,7 +198,7 @@ const App: React.FC = () => {
         <div className="flex justify-center mb-4 grayscale opacity-40">
           <MainLogo sizeClass="w-6 h-6" containerSize="24px" />
         </div>
-        <p>© 2026 AI 全能性格分析家 · 专业心理学引擎</p>
+        <p>© 2026 {t.appName} · {t.footer}</p>
       </footer>
     </div>
   );
